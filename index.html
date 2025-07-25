@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Never Have I Ever</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e91e63 0%, #9c27b0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            animation: slideUp 0.5s ease;
+        }
+
+        .game {
+            max-width: 800px;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #e91e63, #9c27b0);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            min-height: 44px;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px !important;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #e91e63;
+            box-shadow: 0 0 10px rgba(233, 30, 99, 0.2);
+        }
+
+        .instructions-btn {
+            background: #17a2b8;
+        }
+
+        .instructions-btn:hover {
+            background: #138496;
+        }
+
+        .lobby-code {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: 2px dashed #e91e63;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lobby-code::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(233, 30, 99, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .code-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e91e63;
+            letter-spacing: 2px;
+            margin: 10px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            font-size: 14px;
+            padding: 8px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .participants {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .participant {
+            background: linear-gradient(45deg, #f8f9fa, #ffffff);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid #e91e63;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .participant:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .participant.host {
+            border-left-color: #ffc107;
+            background: linear-gradient(45deg, #fff8e1, #ffffff);
+        }
+
+        .participant.disconnected {
+            opacity: 0.5;
+            border-left-color: #dc3545 !important;
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .back-btn {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .connection-status.connected {
+            background: #28a745;
+        }
+
+        .connection-status.connecting {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .connection-status.disconnected {
+            background: #dc3545;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e91e63;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #f5c6cb;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #c3e6cb;
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Game Styles */
+        .topic-display {
+            background: linear-gradient(45deg, #fce4ec, #f8f9fa);
+            border: 2px solid #e91e63;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            animation: slideInDown 0.8s ease;
+        }
+
+        .topic-statement {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e91e63;
+            margin: 10px 0;
+            animation: bounceIn 0.8s ease;
+            line-height: 1.3;
+        }
+
+        .timer-display {
+            background: linear-gradient(45deg, #fff3e0, #f8f9fa);
+            border: 2px solid #ff9800;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            animation: slideInDown 0.8s ease;
+        }
+
+        .phase-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #f57c00;
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            font-size: 48px;
+            font-weight: bold;
+            color: #e65100;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timer.urgent {
+            color: #d32f2f;
+            animation: pulse 1s infinite;
+        }
+
+        .timer-description {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .voting-interface {
+            margin: 30px 0;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .option-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .option-btn {
+            min-width: 200px;
+            font-size: 20px;
+            padding: 20px 30px;
+            border-radius: 15px;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .option-btn.yes {
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            color: white;
+        }
+
+        .option-btn.no {
+            background: linear-gradient(45deg, #f44336, #ef5350);
+            color: white;
+        }
+
+        .option-btn.true {
+            background: linear-gradient(45deg, #2196f3, #42a5f5);
+            color: white;
+        }
+
+        .option-btn.false {
+            background: linear-gradient(45deg, #ff9800, #ffb74d);
+            color: white;
+        }
+
+        .option-btn:hover {
+            transform: scale(1.05);
+            border-color: #fff;
+        }
+
+        .option-btn.selected {
+            transform: scale(1.1);
+            border: 3px solid #ffc107;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.6), 0 8px 25px rgba(0,0,0,0.3);
+            animation: selectedPulse 0.5s ease;
+        }
+
+        .option-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .option-btn.selected:disabled {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        @keyframes selectedPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1.1); }
+        }
+
+        .your-vote {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .vote-results {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            animation: slideInUp 0.8s ease;
+        }
+
+        .vote-breakdown {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .vote-stat {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 150px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .vote-stat:hover {
+            transform: translateY(-5px);
+        }
+
+        .vote-stat.yes {
+            border-top: 5px solid #4caf50;
+        }
+
+        .vote-stat.no {
+            border-top: 5px solid #f44336;
+        }
+
+        .vote-stat.majority {
+            background: linear-gradient(45deg, #fff8e1, #ffffff);
+            border: 2px solid #ffc107;
+        }
+
+        .vote-count {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .vote-label {
+            font-size: 18px;
+            color: #666;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .vote-percentage {
+            font-size: 14px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .result-message {
+            background: linear-gradient(45deg, #fff3e0, #f8f9fa);
+            border: 2px solid #ff9800;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .result-message.win {
+            background: linear-gradient(45deg, #e8f5e8, #f8f9fa);
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .result-message.tie {
+            color: #f57c00;
+        }
+
+        /* Player Selection Phase */
+        .player-selection {
+            background: linear-gradient(45deg, #e1f5fe, #f8f9fa);
+            border: 2px solid #03a9f4;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            animation: slideInUp 0.8s ease;
+        }
+
+        .selected-player {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0277bd;
+            margin: 15px 0;
+        }
+
+        .player-vote-display {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #03a9f4;
+        }
+
+        .player-vote-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .player-vote-answer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0277bd;
+        }
+
+        /* Confession Phase */
+        .confession-interface {
+            margin: 30px 0;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .confession-question {
+            background: linear-gradient(45deg, #fff3e0, #f8f9fa);
+            border: 2px solid #ff9800;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 18px;
+            color: #e65100;
+            font-weight: bold;
+        }
+
+        /* Guessing Phase */
+        .guessing-interface {
+            margin: 30px 0;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .guessing-question {
+            background: linear-gradient(45deg, #f3e5f5, #f8f9fa);
+            border: 2px solid #9c27b0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 18px;
+            color: #6a1b9a;
+            font-weight: bold;
+        }
+
+        .scoreboard {
+            background: linear-gradient(45deg, #fff8e1, #f8f9fa);
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            animation: slideInUp 0.8s ease;
+        }
+
+        .round-indicator {
+            background: #e91e63;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .score-list {
+            margin: 20px 0;
+        }
+
+        .score-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .score-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .score-item.leader {
+            border: 2px solid #ffc107;
+            background: linear-gradient(45deg, #fff8e1, #ffffff);
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .player-score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f57c00;
+        }
+
+        .waiting-next {
+            background: linear-gradient(45deg, #e3f2fd, #f8f9fa);
+            border: 2px solid #2196f3;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+
+        .waiting-message {
+            font-size: 18px;
+            color: #1976d2;
+            font-weight: bold;
+        }
+
+        .game-end-screen {
+            background: linear-gradient(45deg, #f3e5f5, #f8f9fa);
+            border: 2px solid #9c27b0;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            animation: bounceIn 0.8s ease;
+        }
+
+        .winner-announcement {
+            font-size: 32px;
+            font-weight: bold;
+            color: #6a1b9a;
+            margin-bottom: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        .instructions-content {
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .instructions-content h2 {
+            color: #e91e63;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .instructions-content h3 {
+            color: #333;
+            margin: 1.5rem 0 0.5rem 0;
+        }
+
+        .instructions-content ul {
+            margin: 0.5rem 0 1rem 1.5rem;
+        }
+
+        .instructions-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .username-display {
+            background: linear-gradient(45deg, #e9ecef, #f8f9fa);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+
+        .participant-count {
+            background: #e91e63;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                margin: 10px;
+            }
+
+            .option-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .option-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .timer {
+                font-size: 36px;
+            }
+
+            .topic-statement {
+                font-size: 24px;
+            }
+
+            .vote-breakdown {
+                flex-direction: column;
+            }
+
+            .vote-stat {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Connection Status -->
+    <div id="connectionStatus" class="connection-status connecting">
+        Connecting... <div class="loading"></div>
+    </div>
+
+    <!-- Home Page -->
+    <div id="homePage" class="container">
+        <h1>🤫 Never Have I Ever</h1>
+        
+        <div id="messageContainer"></div>
+        
+        <div class="input-group">
+            <input type="text" id="usernameInput" placeholder="Enter your username" maxlength="20">
+        </div>
+        
+        <button class="btn" onclick="createLobby()" id="createBtn" disabled>
+            Create Lobby
+        </button>
+        
+        <div class="input-group">
+            <input type="text" id="joinCode" placeholder="Enter lobby code (6 characters)" maxlength="6" style="text-transform: uppercase;">
+            <button class="btn" onclick="joinLobby()" id="joinBtn" disabled>Join Lobby</button>
+        </div>
+
+        <button class="btn instructions-btn" onclick="showInstructions()">📖 Instructions</button>
+    </div>
+
+    <!-- Lobby Page -->
+    <div id="lobbyPage" class="container hidden">
+        <h1>🏠 Lobby</h1>
+        
+        <div class="username-display" id="usernameDisplay">
+            👤 Username: <span id="currentUsername"></span>
+        </div>
+        
+        <div class="lobby-code">
+            <div>📤 Share this code with others:</div>
+            <div class="code-display" id="lobbyCodeDisplay">------</div>
+            <button class="btn copy-btn" onclick="copyCode()">📋 Copy Code</button>
+        </div>
+
+        <div class="participants">
+            <h3>👥 Participants <span class="participant-count" id="participantCount">0</span></h3>
+            <div id="participantsList"></div>
+        </div>
+
+        <button class="btn" onclick="startGame()" id="startBtn" style="display: none;">
+            🚀 Start Game
+        </button>
+        <button class="btn back-btn" onclick="leaveLobby()">🚪 Leave Lobby</button>
+    </div>
+
+    <!-- Game Page -->
+    <div id="gamePage" class="container game hidden">
+        <h1 id="gameTitle">🤫 Never Have I Ever</h1>
+        
+        <!-- Round Indicator -->
+        <div id="roundIndicator" class="round-indicator hidden">
+            Round <span id="currentRound">1</span> of 15
+        </div>
+        
+        <!-- Topic Display -->
+        <div id="topicContainer" class="topic-display hidden">
+            <div id="topicStatement" class="topic-statement"></div>
+        </div>
+
+        <!-- Timer Display -->
+        <div id="timerContainer" class="timer-display hidden">
+            <div id="phaseTitle" class="phase-title"></div>
+            <div id="timer" class="timer">00:00</div>
+            <div id="timerDescription" class="timer-description"></div>
+        </div>
+
+        <!-- Initial Voting Interface -->
+        <div id="votingInterface" class="voting-interface hidden">
+            <h3>Have you ever...?</h3>
+            <div class="option-buttons">
+                <button class="btn option-btn yes" onclick="castVote('yes')" id="yesBtn">
+                    Yes, I have
+                </button>
+                <button class="btn option-btn no" onclick="castVote('no')" id="noBtn">
+                    No, I haven't
+                </button>
+            </div>
+        </div>
+
+        <!-- Vote Results -->
+        <div id="voteResults" class="vote-results hidden">
+            <h3>📊 Initial Vote Results</h3>
+            <div id="voteBreakdown" class="vote-breakdown"></div>
+            <div id="resultMessage" class="result-message"></div>
+        </div>
+
+        <!-- Player Selection Display -->
+        <div id="playerSelection" class="player-selection hidden">
+            <h3>🎯 Player Selected</h3>
+            <div class="selected-player" id="selectedPlayerName">PlayerName</div>
+            <div class="player-vote-display">
+                <div class="player-vote-text">Their vote was:</div>
+                <div class="player-vote-answer" id="selectedPlayerVote">Yes/No</div>
+            </div>
+        </div>
+
+        <!-- Confession Interface -->
+        <div id="confessionInterface" class="confession-interface hidden">
+            <div class="confession-question">
+                Were you honest with your vote? Click True if you were honest, False if you lied.
+            </div>
+            <div class="option-buttons">
+                <button class="btn option-btn true" onclick="makeConfession('true')" id="trueBtn">
+                    True (I was honest)
+                </button>
+                <button class="btn option-btn false" onclick="makeConfession('false')" id="falseBtn">
+                    False (I lied)
+                </button>
+            </div>
+        </div>
+
+        <!-- Guessing Interface -->
+        <div id="guessingInterface" class="guessing-interface hidden">
+            <div class="guessing-question" id="guessingQuestion">
+                Do you think [Player] was honest with their vote?
+            </div>
+            <div class="option-buttons">
+                <button class="btn option-btn true" onclick="makeGuess('true')" id="guessHonestBtn">
+                    Honest
+                </button>
+                <button class="btn option-btn false" onclick="makeGuess('false')" id="guessLiedBtn">
+                    Lied
+                </button>
+            </div>
+        </div>
+
+        <!-- Confession Results -->
+        <div id="confessionResults" class="vote-results hidden">
+            <h3>🔍 Confession Results</h3>
+            <div id="confessionBreakdown" class="vote-breakdown"></div>
+            <div id="confessionMessage" class="result-message"></div>
+        </div>
+
+        <!-- Scoreboard -->
+        <div id="scoreboard" class="scoreboard hidden">
+            <h3>🏆 Current Scores</h3>
+            <div id="scoreList" class="score-list"></div>
+        </div>
+
+        <!-- Waiting for next round -->
+        <div id="waitingForNext" class="waiting-next hidden">
+            <div class="waiting-message">
+                🔄 Preparing next round...
+            </div>
+        </div>
+
+        <!-- Game End -->
+        <div id="gameEndScreen" class="game-end-screen hidden">
+            <div class="winner-announcement">🎉 Game Complete!</div>
+            <div id="finalScores" class="score-list"></div>
+            <button class="btn" onclick="restartGame()" id="restartBtn" style="display: none;">
+                🔄 Play Again
+            </button>
+        </div>
+
+        <button class="btn back-btn" onclick="leaveGame()" id="leaveGameBtn">🚪 Leave Game</button>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructionsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeInstructions()">&times;</span>
+            <div class="instructions-content">
+                <h2>🤫 Never Have I Ever - Instructions</h2>
+                
+                <h3>📋 How to Get Started</h3>
+                <ul>
+                    <li><strong>Enter Username:</strong> Type your username (at least 2 characters)</li>
+                    <li><strong>Create Lobby:</strong> Click "Create Lobby" to start a new game room</li>
+                    <li><strong>Join Lobby:</strong> Enter a 6-character lobby code to join an existing game</li>
+                    <li><strong>Join Anytime:</strong> Players can join at any point during the game!</li>
+                </ul>
+
+                <h3>🎯 Game Flow</h3>
+                <ul>
+                    <li><strong>15 Rounds:</strong> The game consists of 15 rounds</li>
+                    <li><strong>Topic Reveal:</strong> Each round presents a "Never have I ever" statement</li>
+                    <li><strong>Initial Voting (30s):</strong> Everyone votes Yes/No (have done it or not)</li>
+                    <li><strong>Player Selection:</strong> Game randomly picks one player</li>
+                    <li><strong>Confession (1 min):</strong> Selected player confesses if they were honest</li>
+                    <li><strong>Guessing (30s):</strong> Other players guess if confession is true</li>
+                    <li><strong>Results:</strong> See who guessed correctly and earn points</li>
+                </ul>
+
+                <h3>🏆 Scoring System</h3>
+                <ul>
+                    <li><strong>Initial Vote:</strong> +1 point if you vote with the majority</li>
+                    <li><strong>Confession Phase:</strong> Selected player makes their confession</li>
+                    <li><strong>Guessing Phase:</strong> +3 points for correct guesses about honesty</li>
+                    <li><strong>Final Winner:</strong> Player with the most points after 15 rounds wins!</li>
+                </ul>
+
+                <h3>💡 Tips</h3>
+                <ul>
+                    <li>Sometimes it's strategic to lie in your initial vote!</li>
+                    <li>Pay attention to other players' reactions</li>
+                    <li>The confession phase is worth more points than initial voting</li>
+                    <li>New players can join mid-game and start earning points</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO Client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
+    
+    <script>
+        // Socket.IO connection
+        const socket = io({
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: Infinity,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000
+        });
+        
+        // Game state
+        let currentLobby = null;
+        let isHost = false;
+        let currentUsername = '';
+        let gameState = null;
+        let timerInterval = null;
+
+        // Visibility change detection
+        let isPageHidden = false;
+        let needsSync = false;
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                isPageHidden = true;
+            } else {
+                isPageHidden = false;
+                if (needsSync && currentLobby) {
+                    socket.emit('request-sync', { code: currentLobby.code });
+                    needsSync = false;
+                }
+            }
+        });
+
+        // Keep connection alive
+        setInterval(() => {
+            if (!document.hidden && socket.connected) {
+                socket.emit('ping');
+            }
+        }, 30000);
+
+        // UI Elements
+        const connectionStatus = document.getElementById('connectionStatus');
+        const messageContainer = document.getElementById('messageContainer');
+        const usernameInput = document.getElementById('usernameInput');
+        const joinCodeInput = document.getElementById('joinCode');
+        const createBtn = document.getElementById('createBtn');
+        const joinBtn = document.getElementById('joinBtn');
+
+        // Socket event listeners
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            updateConnectionStatus('connected');
+            checkInputs();
+            
+            if (currentLobby && gameState) {
+                socket.emit('join-lobby', { code: currentLobby.code, username: currentUsername });
+                setTimeout(() => {
+                    socket.emit('request-sync', { code: currentLobby.code });
+                }, 500);
+            }
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            updateConnectionStatus('disconnected');
+            needsSync = true;
+        });
+
+        socket.on('lobby-updated', (lobby) => {
+            console.log('Lobby updated:', lobby);
+            currentLobby = lobby;
+            updateLobbyDisplay();
+        });
+
+        socket.on('game-started', (data) => {
+            console.log('Game started!', data);
+            gameState = data.gameState;
+            showGamePage();
+            showSuccess('Game is starting!');
+        });
+
+        socket.on('game-phase-update', (data) => {
+            console.log('Phase update:', data);
+            updateGamePhase(data);
+        });
+
+        socket.on('topic-selected', (data) => {
+            console.log('Topic selected:', data);
+            displayTopic(data.topic);
+        });
+
+        socket.on('game-timer', (data) => {
+            updateTimer(data.timeRemaining);
+        });
+
+        socket.on('initial-vote-results', (data) => {
+            console.log('Initial vote results:', data);
+            displayInitialResults(data);
+        });
+
+        socket.on('player-selected', (data) => {
+            console.log('Player selected:', data);
+            displayPlayerSelection(data);
+        });
+
+        socket.on('confession-results', (data) => {
+            console.log('Confession results:', data);
+            displayConfessionResults(data);
+        });
+
+        socket.on('scoreboard-update', (data) => {
+            console.log('Scoreboard update:', data);
+            displayScoreboard(data.scores);
+        });
+
+        socket.on('game-ended', (data) => {
+            console.log('Game ended:', data);
+            displayGameEnd(data);
+        });
+
+        socket.on('lobby-closed', () => {
+            console.log('Lobby was closed');
+            showError('Lobby was closed by the host.');
+            setTimeout(() => {
+                leaveLobby();
+            }, 2000);
+        });
+
+        socket.on('sync-game-state', (data) => {
+            console.log('Syncing game state:', data);
+            
+            currentLobby = data.lobby;
+            gameState = data.gameState;
+            
+            showGamePage();
+            
+            if (data.gameState.currentTopic) {
+                displayTopic(data.gameState.currentTopic);
+            }
+            
+            updateGamePhase({
+                phase: data.gameState.phase,
+                roundNumber: data.gameState.roundNumber,
+                selectedPlayer: data.gameState.selectedPlayer
+            });
+            
+            if (data.gameState.timer > 0) {
+                updateTimer(data.gameState.timer);
+            }
+            
+            if (data.userVote) {
+                showYourVote(data.userVote, data.gameState.phase);
+            }
+            
+            if (data.gameState.scores) {
+                displayScoreboard(data.gameState.scores);
+            }
+            
+            showSuccess('Synced with game!');
+        });
+
+        // Connection status management
+        function updateConnectionStatus(status) {
+            connectionStatus.className = `connection-status ${status}`;
+            switch(status) {
+                case 'connected':
+                    connectionStatus.innerHTML = '🟢 Connected';
+                    break;
+                case 'connecting':
+                    connectionStatus.innerHTML = '🟡 Connecting... <div class="loading"></div>';
+                    break;
+                case 'disconnected':
+                    connectionStatus.innerHTML = '🔴 Disconnected';
+                    break;
+            }
+        }
+
+        // Message management
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            messageContainer.innerHTML = '';
+            messageContainer.appendChild(errorDiv);
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            messageContainer.innerHTML = '';
+            messageContainer.appendChild(successDiv);
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+
+        // Input validation
+        function checkInputs() {
+            const username = usernameInput.value.trim();
+            const joinCode = joinCodeInput.value.trim();
+            const isConnected = socket.connected;
+            
+            createBtn.disabled = !username || username.length < 2 || !isConnected;
+            joinBtn.disabled = !username || username.length < 2 || !joinCode || joinCode.length !== 6 || !isConnected;
+        }
+
+        // Event listeners
+        usernameInput.addEventListener('input', checkInputs);
+        joinCodeInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+            checkInputs();
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', checkInputs);
+
+        // Create lobby
+        async function createLobby() {
+            const username = usernameInput.value.trim();
+            
+            if (!username || username.length < 2) {
+                showError('Username must be at least 2 characters long');
+                return;
+            }
+
+            if (!socket.connected) {
+                showError('Not connected to server. Please wait...');
+                return;
+            }
+
+            try {
+                createBtn.disabled = true;
+                createBtn.innerHTML = 'Creating... <div class="loading"></div>';
+                
+                const response = await fetch('/api/lobby/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentLobby = data.lobby;
+                    currentUsername = username;
+                    isHost = true;
+                    
+                    socket.emit('join-lobby', { code: data.code, username });
+                    
+                    showLobbyPage();
+                    showSuccess(`Lobby ${data.code} created successfully!`);
+                } else {
+                    showError(data.error || 'Failed to create lobby');
+                }
+            } catch (error) {
+                console.error('Error creating lobby:', error);
+                showError('Failed to create lobby. Please try again.');
+            } finally {
+                createBtn.disabled = false;
+                createBtn.innerHTML = 'Create Lobby';
+                checkInputs();
+            }
+        }
+
+        // Join lobby
+        async function joinLobby() {
+            const username = usernameInput.value.trim();
+            const code = joinCodeInput.value.toUpperCase().trim();
+            
+            if (!username || username.length < 2) {
+                showError('Username must be at least 2 characters long');
+                return;
+            }
+            
+            if (!code || code.length !== 6) {
+                showError('Please enter a valid 6-character lobby code');
+                return;
+            }
+
+            if (!socket.connected) {
+                showError('Not connected to server. Please wait...');
+                return;
+            }
+
+            try {
+                joinBtn.disabled = true;
+                joinBtn.innerHTML = 'Joining... <div class="loading"></div>';
+                
+                const response = await fetch('/api/lobby/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code, username }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentLobby = data.lobby;
+                    currentUsername = username;
+                    isHost = false;
+                    
+                    socket.emit('join-lobby', { code, username });
+                    
+                    if (data.reconnection) {
+                        showSuccess(`Reconnected to lobby ${code}!`);
+                    } else {
+                        showSuccess(`Joined lobby ${code} successfully!`);
+                    }
+                    
+                    showLobbyPage();
+                    
+                    if (currentLobby.gameStarted) {
+                        setTimeout(() => {
+                            socket.emit('request-sync', { code });
+                        }, 1000);
+                    }
+                } else {
+                    showError(data.error || 'Failed to join lobby');
+                }
+            } catch (error) {
+                console.error('Error joining lobby:', error);
+                showError('Failed to join lobby. Please try again.');
+            } finally {
+                joinBtn.disabled = false;
+                joinBtn.innerHTML = 'Join Lobby';
+                checkInputs();
+            }
+        }
+
+        // Show pages
+        function showLobbyPage() {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('lobbyPage').classList.remove('hidden');
+            document.getElementById('gamePage').classList.add('hidden');
+            
+            updateLobbyDisplay();
+        }
+
+        function showGamePage() {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('lobbyPage').classList.add('hidden');
+            document.getElementById('gamePage').classList.remove('hidden');
+            
+            hideAllGameSections();
+        }
+
+        // Update lobby display
+        function updateLobbyDisplay() {
+            if (!currentLobby) return;
+            
+            document.getElementById('lobbyCodeDisplay').textContent = currentLobby.code;
+            document.getElementById('currentUsername').textContent = currentUsername;
+            
+            const connectedCount = currentLobby.participants.filter(p => p.connected !== false).length;
+            document.getElementById('participantCount').textContent = connectedCount;
+            
+            const participantsList = document.getElementById('participantsList');
+            participantsList.innerHTML = '';
+            
+            currentLobby.participants.forEach((participant, index) => {
+                const div = document.createElement('div');
+                div.className = `participant ${participant.isHost ? 'host' : ''} ${participant.connected === false ? 'disconnected' : ''}`;
+                div.style.animationDelay = `${index * 0.1}s`;
+                div.innerHTML = `
+                    ${participant.isHost ? '👑' : '👤'} ${participant.username} 
+                    ${participant.isHost ? '<span style="font-size: 0.8em; color: #ffc107;">(Host)</span>' : ''}
+                    ${participant.connected === false ? '<span style="font-size: 0.8em; color: #dc3545;">(Disconnected)</span>' : ''}
+                `;
+                participantsList.appendChild(div);
+            });
+            
+            document.getElementById('startBtn').style.display = isHost ? 'inline-block' : 'none';
+            
+            if (isHost) {
+                const startBtn = document.getElementById('startBtn');
+                startBtn.disabled = connectedCount < 2;
+            }
+        }
+
+        // Game phase management
+        function updateGamePhase(data) {
+            hideAllGameSections();
+            
+            if (data.roundNumber) {
+                document.getElementById('currentRound').textContent = data.roundNumber;
+                document.getElementById('roundIndicator').classList.remove('hidden');
+            }
+            
+            switch(data.phase) {
+                case 'initial-voting':
+                    showInitialVotingPhase(data);
+                    break;
+                case 'initial-results':
+                    showInitialResultsPhase();
+                    break;
+                case 'player-selection':
+                    showPlayerSelectionPhase(data);
+                    break;
+                case 'confession':
+                    showConfessionPhase(data);
+                    break;
+                case 'guessing':
+                    showGuessingPhase(data);
+                    break;
+                case 'confession-results':
+                    showConfessionResultsPhase();
+                    break;
+                case 'scoreboard':
+                    showScoreboardPhase();
+                    break;
+                case 'waiting':
+                    showWaitingPhase();
+                    break;
+            }
+        }
+
+        function hideAllGameSections() {
+            const sections = [
+                'timerContainer', 'votingInterface', 'voteResults', 
+                'playerSelection', 'confessionInterface', 'guessingInterface',
+                'confessionResults', 'scoreboard', 'waitingForNext', 'gameEndScreen'
+            ];
+            
+            sections.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+        }
+
+        function showInitialVotingPhase(data) {
+            document.getElementById('topicContainer').classList.remove('hidden');
+            document.getElementById('timerContainer').classList.remove('hidden');
+            document.getElementById('votingInterface').classList.remove('hidden');
+            
+            document.getElementById('phaseTitle').textContent = `Round ${data.roundNumber} - Initial Voting`;
+            document.getElementById('timerDescription').textContent = 'Cast your vote!';
+            
+            enableInitialVoteButtons();
+        }
+
+        function showInitialResultsPhase() {
+            document.getElementById('voteResults').classList.remove('hidden');
+        }
+
+        function showPlayerSelectionPhase(data) {
+            document.getElementById('playerSelection').classList.remove('hidden');
+        }
+
+        function showConfessionPhase(data) {
+            document.getElementById('timerContainer').classList.remove('hidden');
+            document.getElementById('confessionInterface').classList.remove('hidden');
+            
+            document.getElementById('phaseTitle').textContent = 'Confession Time';
+            document.getElementById('timerDescription').textContent = 'Selected player: confess your honesty!';
+            
+            // Only show confession interface to the selected player
+            if (data.selectedPlayer === currentUsername) {
+                enableConfessionButtons();
+            } else {
+                disableConfessionButtons();
+                document.getElementById('confessionInterface').style.display = 'block';
+                document.querySelector('.confession-question').textContent = 
+                    `Waiting for ${data.selectedPlayer} to make their confession...`;
+            }
+        }
+
+        function showGuessingPhase(data) {
+            document.getElementById('timerContainer').classList.remove('hidden');
+            document.getElementById('guessingInterface').classList.remove('hidden');
+            
+            document.getElementById('phaseTitle').textContent = 'Guessing Time';
+            document.getElementById('timerDescription').textContent = 'Guess if they were honest!';
+            
+            document.getElementById('guessingQuestion').textContent = 
+                `Do you think ${data.selectedPlayer} was honest with their vote?`;
+            
+            // Don't let the selected player guess about themselves
+            if (data.selectedPlayer === currentUsername) {
+                disableGuessingButtons();
+                document.getElementById('guessingQuestion').textContent = 
+                    'Other players are guessing about your honesty...';
+            } else {
+                enableGuessingButtons();
+            }
+        }
+
+        function showConfessionResultsPhase() {
+            document.getElementById('confessionResults').classList.remove('hidden');
+        }
+
+        function showScoreboardPhase() {
+            document.getElementById('scoreboard').classList.remove('hidden');
+        }
+
+        function showWaitingPhase() {
+            document.getElementById('waitingForNext').classList.remove('hidden');
+        }
+
+        // Topic display
+        function displayTopic(topic) {
+            document.getElementById('topicStatement').textContent = `Never have I ever ${topic}`;
+            document.getElementById('topicContainer').classList.remove('hidden');
+        }
+
+        // Timer management
+        function updateTimer(timeRemaining) {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = display;
+            
+            if (timeRemaining <= 10) {
+                timerElement.classList.add('urgent');
+            } else {
+                timerElement.classList.remove('urgent');
+            }
+        }
+
+        // Voting functions
+        function castVote(vote) {
+            socket.emit('cast-initial-vote', {
+                code: currentLobby.code,
+                username: currentUsername,
+                vote: vote
+            });
+            
+            showYourVote(vote, 'initial-voting');
+            disableInitialVoteButtons();
+        }
+
+        function makeConfession(confession) {
+            socket.emit('make-confession', {
+                code: currentLobby.code,
+                username: currentUsername,
+                confession: confession
+            });
+            
+            showYourVote(confession, 'confession');
+            disableConfessionButtons();
+        }
+
+        function makeGuess(guess) {
+            socket.emit('make-guess', {
+                code: currentLobby.code,
+                username: currentUsername,
+                guess: guess
+            });
+            
+            showYourVote(guess, 'guessing');
+            disableGuessingButtons();
+        }
+
+        function showYourVote(vote, phase) {
+            let button1, button2;
+            
+            if (phase === 'initial-voting') {
+                button1 = document.getElementById('yesBtn');
+                button2 = document.getElementById('noBtn');
+            } else if (phase === 'confession') {
+                button1 = document.getElementById('trueBtn');
+                button2 = document.getElementById('falseBtn');
+            } else if (phase === 'guessing') {
+                button1 = document.getElementById('guessHonestBtn');
+                button2 = document.getElementById('guessLiedBtn');
+            }
+            
+            // Remove selected class from both buttons
+            button1.classList.remove('selected');
+            button2.classList.remove('selected');
+            
+            // Add selected class to the voted button
+            if ((phase === 'initial-voting' && vote === 'yes') || 
+                (phase === 'confession' && vote === 'true') ||
+                (phase === 'guessing' && vote === 'true')) {
+                button1.classList.add('selected');
+            } else {
+                button2.classList.add('selected');
+            }
+        }
+
+        function enableInitialVoteButtons() {
+            document.getElementById('yesBtn').disabled = false;
+            document.getElementById('noBtn').disabled = false;
+            document.getElementById('yesBtn').classList.remove('selected');
+            document.getElementById('noBtn').classList.remove('selected');
+        }
+
+        function disableInitialVoteButtons() {
+            document.getElementById('yesBtn').disabled = true;
+            document.getElementById('noBtn').disabled = true;
+        }
+
+        function enableConfessionButtons() {
+            document.getElementById('trueBtn').disabled = false;
+            document.getElementById('falseBtn').disabled = false;
+            document.getElementById('trueBtn').classList.remove('selected');
+            document.getElementById('falseBtn').classList.remove('selected');
+        }
+
+        function disableConfessionButtons() {
+            document.getElementById('trueBtn').disabled = true;
+            document.getElementById('falseBtn').disabled = true;
+        }
+
+        function enableGuessingButtons() {
+            document.getElementById('guessHonestBtn').disabled = false;
+            document.getElementById('guessLiedBtn').disabled = false;
+            document.getElementById('guessHonestBtn').classList.remove('selected');
+            document.getElementById('guessLiedBtn').classList.remove('selected');
+        }
+
+        function disableGuessingButtons() {
+            document.getElementById('guessHonestBtn').disabled = true;
+            document.getElementById('guessLiedBtn').disabled = true;
+        }
+
+        // Display functions
+        function displayInitialResults(data) {
+            const breakdown = document.getElementById('voteBreakdown');
+            const totalVotes = data.votes.yes + data.votes.no;
+            const yesPercentage = totalVotes > 0 ? Math.round((data.votes.yes / totalVotes) * 100) : 0;
+            const noPercentage = totalVotes > 0 ? Math.round((data.votes.no / totalVotes) * 100) : 0;
+            
+            breakdown.innerHTML = `
+                <div class="vote-stat yes ${data.majorityVote === 'yes' ? 'majority' : ''}">
+                    <div class="vote-label">Yes, I have</div>
+                    <div class="vote-count">${data.votes.yes}</div>
+                    <div class="vote-percentage">${yesPercentage}%</div>
+                </div>
+                <div class="vote-stat no ${data.majorityVote === 'no' ? 'majority' : ''}">
+                    <div class="vote-label">No, I haven't</div>
+                    <div class="vote-count">${data.votes.no}</div>
+                    <div class="vote-percentage">${noPercentage}%</div>
+                </div>
+            `;
+            
+            const resultMessage = document.getElementById('resultMessage');
+            if (data.majorityVote) {
+                const majorityText = data.majorityVote === 'yes' ? 'Yes, I have' : 'No, I haven\'t';
+                resultMessage.className = 'result-message win';
+                resultMessage.innerHTML = `🏆 Majority voted: <strong>${majorityText}</strong><br>Majority voters get +1 point`;
+            } else {
+                resultMessage.className = 'result-message tie';
+                resultMessage.innerHTML = `🤝 It's a tie! No points awarded for initial voting`;
+            }
+        }
+
+        function displayPlayerSelection(data) {
+            document.getElementById('selectedPlayerName').textContent = data.selectedPlayer;
+            const voteText = data.playerVote === 'yes' ? 'Yes, I have' : 'No, I haven\'t';
+            document.getElementById('selectedPlayerVote').textContent = voteText;
+        }
+
+        function displayConfessionResults(data) {
+            const breakdown = document.getElementById('confessionBreakdown');
+            const totalGuesses = data.guesses.honest + data.guesses.lied;
+            const honestPercentage = totalGuesses > 0 ? Math.round((data.guesses.honest / totalGuesses) * 100) : 0;
+            const liedPercentage = totalGuesses > 0 ? Math.round((data.guesses.lied / totalGuesses) * 100) : 0;
+            
+            breakdown.innerHTML = `
+                <div class="vote-stat true">
+                    <div class="vote-label">Guessed Honest</div>
+                    <div class="vote-count">${data.guesses.honest}</div>
+                    <div class="vote-percentage">${honestPercentage}%</div>
+                </div>
+                <div class="vote-stat false">
+                    <div class="vote-label">Guessed Lied</div>
+                    <div class="vote-count">${data.guesses.lied}</div>
+                    <div class="vote-percentage">${liedPercentage}%</div>
+                </div>
+            `;
+            
+            const confessionMessage = document.getElementById('confessionMessage');
+            const confessionText = data.actualConfession === 'true' ? 'was honest' : 'was lying';
+            confessionMessage.className = 'result-message win';
+            confessionMessage.innerHTML = `🔍 <strong>${data.selectedPlayer}</strong> ${confessionText}!<br>
+                                         Correct guessers get +3 points`;
+        }
+
+        function displayScoreboard(scores) {
+            const scoreList = document.getElementById('scoreList');
+            
+            const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            
+            scoreList.innerHTML = '';
+            sortedScores.forEach(([username, score], index) => {
+                const scoreItem = document.createElement('div');
+                scoreItem.className = `score-item ${index === 0 ? 'leader' : ''}`;
+                scoreItem.innerHTML = `
+                    <span class="player-name">${index === 0 ? '👑 ' : ''}${username}</span>
+                    <span class="player-score">${score} pts</span>
+                `;
+                scoreList.appendChild(scoreItem);
+            });
+        }
+
+        function displayGameEnd(data) {
+            hideAllGameSections();
+            document.getElementById('gameEndScreen').classList.remove('hidden');
+            
+            const finalScores = document.getElementById('finalScores');
+            const sortedScores = Object.entries(data.finalScores).sort((a, b) => b[1] - a[1]);
+            
+            finalScores.innerHTML = '';
+            sortedScores.forEach(([username, score], index) => {
+                const scoreItem = document.createElement('div');
+                scoreItem.className = `score-item ${index === 0 ? 'leader' : ''}`;
+                scoreItem.innerHTML = `
+                    <span class="player-name">
+                        ${index === 0 ? '🥇 ' : index === 1 ? '🥈 ' : index === 2 ? '🥉 ' : ''}
+                        ${username}
+                    </span>
+                    <span class="player-score">${score} pts</span>
+                `;
+                finalScores.appendChild(scoreItem);
+            });
+            
+            if (isHost) {
+                document.getElementById('restartBtn').style.display = 'inline-block';
+            }
+        }
+
+        // Copy lobby code
+        function copyCode() {
+            const code = currentLobby.code;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.background = '#20c997';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#28a745';
+                }, 2000);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showSuccess('Code copied to clipboard!');
+            });
+        }
+
+        // Start game
+        function startGame() {
+            if (!isHost) {
+                showError('Only the host can start the game');
+                return;
+            }
+            
+            if (currentLobby.participants.length < 2) {
+                showError('You need at least 2 participants to start the game');
+                return;
+            }
+            
+            socket.emit('start-game', { code: currentLobby.code, username: currentUsername });
+        }
+
+        // Restart game
+        function restartGame() {
+            if (isHost) {
+                socket.emit('restart-game', { code: currentLobby.code });
+            } else {
+                showError('Only the host can restart the game');
+            }
+        }
+
+        // Leave game
+        function leaveGame() {
+            leaveLobby();
+        }
+
+        // Leave lobby
+        function leaveLobby() {
+            if (currentLobby) {
+                socket.emit('leave-lobby', { code: currentLobby.code, username: currentUsername });
+            }
+            
+            currentLobby = null;
+            currentUsername = '';
+            isHost = false;
+            gameState = null;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            document.getElementById('lobbyPage').classList.add('hidden');
+            document.getElementById('gamePage').classList.add('hidden');
+            document.getElementById('homePage').classList.remove('hidden');
+            
+            joinCodeInput.value = '';
+            usernameInput.value = '';
+            messageContainer.innerHTML = '';
+            checkInputs();
+        }
+
+        // Instructions modal
+        function showInstructions() {
+            document.getElementById('instructionsModal').style.display = 'block';
+        }
+
+        function closeInstructions() {
+            document.getElementById('instructionsModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const instructionsModal = document.getElementById('instructionsModal');
+            
+            if (event.target === instructionsModal) {
+                instructionsModal.style.display = 'none';
+            }
+        }
+
+        // Handle page refresh/close
+        window.addEventListener('beforeunload', () => {
+            if (currentLobby) {
+                socket.emit('leave-lobby', { code: currentLobby.code, username: currentUsername });
+            }
+        });
+
+        // Prevent page reload on mobile
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            const touchY = e.touches[0].clientY;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop === 0 && touchY > touchStartY) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
