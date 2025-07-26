@@ -1458,6 +1458,9 @@
         }
 
         function showInitialVotingPhase(data) {
+            // Ensure all sections are hidden first
+            hideAllGameSections();
+            
             document.getElementById('topicContainer').classList.remove('hidden');
             document.getElementById('timerContainer').classList.remove('hidden');
             document.getElementById('votingInterface').classList.remove('hidden');
@@ -1469,14 +1472,17 @@
         }
 
         function showInitialResultsPhase() {
+            hideAllGameSections();
             document.getElementById('voteResults').classList.remove('hidden');
         }
 
         function showPlayerSelectionPhase(data) {
+            hideAllGameSections();
             document.getElementById('playerSelection').classList.remove('hidden');
         }
 
         function showConfessionPhase(data) {
+            hideAllGameSections();
             document.getElementById('playerSelection').classList.remove('hidden');
             document.getElementById('timerContainer').classList.remove('hidden');
             document.getElementById('confessionInterface').classList.remove('hidden');
@@ -1496,6 +1502,7 @@
         }
 
         function showGuessingPhase(data) {
+            hideAllGameSections();
             document.getElementById('timerContainer').classList.remove('hidden');
             document.getElementById('guessingInterface').classList.remove('hidden');
             
@@ -1516,14 +1523,17 @@
         }
 
         function showConfessionResultsPhase() {
+            hideAllGameSections();
             document.getElementById('confessionResults').classList.remove('hidden');
         }
 
         function showScoreboardPhase() {
+            hideAllGameSections();
             document.getElementById('scoreboard').classList.remove('hidden');
         }
 
         function showWaitingPhase() {
+            hideAllGameSections();
             document.getElementById('waitingForNext').classList.remove('hidden');
         }
 
