@@ -1001,8 +1001,8 @@
                 <h3>🏆 Scoring System</h3>
                 <ul>
                     <li><strong>Initial Vote:</strong> +1 point if you vote with the majority</li>
-                    <li><strong>Confession Phase:</strong> Selected player makes their confession</li>
-                    <li><strong>Guessing Phase:</strong> +3 points for correct guesses about honesty</li>
+                    <li><strong>Speaker Bonus:</strong> +3 points for each player who believes your confession</li>
+                    <li><strong>Correct Guessing:</strong> +3 points if you correctly guess the speaker's honesty</li>
                     <li><strong>Final Winner:</strong> Player with the most points after 15 rounds wins!</li>
                 </ul>
 
@@ -1713,10 +1713,11 @@
             `;
             
             const confessionMessage = document.getElementById('confessionMessage');
-            const confessionText = data.actualConfession === 'true' ? 'was honest' : 'was lying';
+            const confessionText = data.actualConfession === 'true' ? 'was telling the truth' : 'was lying';
             confessionMessage.className = 'result-message win';
             confessionMessage.innerHTML = `🔍 <strong>${data.selectedPlayer}</strong> ${confessionText}!<br>
-                                         Correct guessers get +3 points`;
+                                         Speaker gets +3 points per believer<br>
+                                         Correct guessers also get +3 points`;
         }
 
         function displayScoreboard(scores) {
