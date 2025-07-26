@@ -401,6 +401,14 @@
             opacity: 1;
         }
 
+        /* Fix for guessing buttons staying highlighted */
+        .option-btn:disabled.selected {
+            transform: scale(1);
+            border: 3px solid transparent;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: none;
+        }
+
         @keyframes selectedPulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.15); }
@@ -912,10 +920,10 @@
             </div>
             <div class="option-buttons">
                 <button class="btn option-btn true" onclick="makeConfession('true')" id="trueBtn">
-                    True (I was honest)
+                    I am telling the truth
                 </button>
                 <button class="btn option-btn false" onclick="makeConfession('false')" id="falseBtn">
-                    False (I lied)
+                    I am lying
                 </button>
             </div>
         </div>
@@ -927,10 +935,10 @@
             </div>
             <div class="option-buttons">
                 <button class="btn option-btn true" onclick="makeGuess('true')" id="guessHonestBtn">
-                    Honest
+                    He/She is telling the truth
                 </button>
                 <button class="btn option-btn false" onclick="makeGuess('false')" id="guessLiedBtn">
-                    Lied
+                    He/She is lying
                 </button>
             </div>
         </div>
@@ -959,9 +967,6 @@
         <div id="gameEndScreen" class="game-end-screen hidden">
             <div class="winner-announcement">🎉 Game Complete!</div>
             <div id="finalScores" class="score-list"></div>
-            <button class="btn" onclick="restartGame()" id="restartBtn" style="display: none;">
-                🔄 Play Again
-            </button>
         </div>
 
         <button class="btn back-btn" onclick="leaveGame()" id="leaveGameBtn">🚪 Leave Game</button>
@@ -1472,6 +1477,7 @@
         }
 
         function showConfessionPhase(data) {
+            document.getElementById('playerSelection').classList.remove('hidden');
             document.getElementById('timerContainer').classList.remove('hidden');
             document.getElementById('confessionInterface').classList.remove('hidden');
             
@@ -1589,6 +1595,10 @@
             } else if (phase === 'guessing') {
                 button1 = document.getElementById('guessHonestBtn');
                 button2 = document.getElementById('guessLiedBtn');
+                // For guessing phase, don't show selected state when disabled
+                if (button1.disabled || button2.disabled) {
+                    return;
+                }
             }
             
             // Remove selected class from both buttons
@@ -1637,8 +1647,13 @@
         }
 
         function disableGuessingButtons() {
-            document.getElementById('guessHonestBtn').disabled = true;
-            document.getElementById('guessLiedBtn').disabled = true;
+            const button1 = document.getElementById('guessHonestBtn');
+            const button2 = document.getElementById('guessLiedBtn');
+            button1.disabled = true;
+            button2.disabled = true;
+            // Clear selected state when disabling
+            button1.classList.remove('selected');
+            button2.classList.remove('selected');
         }
 
         // Display functions
@@ -1741,10 +1756,6 @@
                 `;
                 finalScores.appendChild(scoreItem);
             });
-            
-            if (isHost) {
-                document.getElementById('restartBtn').style.display = 'inline-block';
-            }
         }
 
         // Copy lobby code
@@ -1783,15 +1794,6 @@
             }
             
             socket.emit('start-game', { code: currentLobby.code, username: currentUsername });
-        }
-
-        // Restart game
-        function restartGame() {
-            if (isHost) {
-                socket.emit('restart-game', { code: currentLobby.code });
-            } else {
-                showError('Only the host can restart the game');
-            }
         }
 
         // Leave game
