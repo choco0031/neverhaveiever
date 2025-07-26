@@ -228,13 +228,16 @@ io.on('connection', (socket) => {
                 guesses: {},
                 scores: {},
                 usedTopics: [],
+                speakerRotation: [], // Track who has spoken
+                availableSpeakers: [], // Players who can still speak this rotation
                 timer: 30,
                 timerInterval: null
             };
             
-            // Initialize scores
+            // Initialize scores and speaker rotation
             lobby.participants.forEach(participant => {
                 gameState.scores[participant.username] = 0;
+                gameState.availableSpeakers.push(participant.username);
             });
             
             gameStates.set(code, gameState);
@@ -253,31 +256,7 @@ io.on('connection', (socket) => {
         
         if (gameState && gameState.phase === 'initial-voting') {
             gameState.initialVotes[username] = vote;
-            
-            const lobby = lobbies.get(code);
-            const connectedPlayers = lobby.participants.filter(p => p.connected !== false);
-            
-            // Check if all connected players have voted
-            const allPlayersVoted = connectedPlayers.every(player => 
-                gameState.initialVotes.hasOwnProperty(player.username)
-            );
-            
-            if (allPlayersVoted) {
-                // Only skip early if at least 15 seconds have passed
-                const timeElapsed = 30 - gameState.timer;
-                const minimumVotingTime = 15;
-                
-                if (timeElapsed >= minimumVotingTime) {
-                    if (gameState.timerInterval) {
-                        clearInterval(gameState.timerInterval);
-                        gameState.timerInterval = null;
-                    }
-                    
-                    setTimeout(() => {
-                        calculateInitialResults(code);
-                    }, 1000);
-                }
-            }
+            // No early timer skipping - let timer run full duration
         }
     });
     
@@ -287,16 +266,7 @@ io.on('connection', (socket) => {
         
         if (gameState && gameState.phase === 'confession' && gameState.selectedPlayer === username) {
             gameState.confession = confession;
-            
-            // Clear the timer and move to guessing phase
-            if (gameState.timerInterval) {
-                clearInterval(gameState.timerInterval);
-                gameState.timerInterval = null;
-            }
-            
-            setTimeout(() => {
-                startGuessingPhase(code);
-            }, 1000);
+            // Don't skip timer - let it run full duration
         }
     });
     
@@ -306,71 +276,13 @@ io.on('connection', (socket) => {
         
         if (gameState && gameState.phase === 'guessing' && username !== gameState.selectedPlayer) {
             gameState.guesses[username] = guess;
-            
-            const lobby = lobbies.get(code);
-            const connectedPlayers = lobby.participants.filter(p => p.connected !== false);
-            const playersWhoCanGuess = connectedPlayers.filter(p => p.username !== gameState.selectedPlayer);
-            
-            // Check if all players who can guess have guessed
-            const allPlayersGuessed = playersWhoCanGuess.every(player => 
-                gameState.guesses.hasOwnProperty(player.username)
-            );
-            
-            if (allPlayersGuessed) {
-                // Only skip early if at least 15 seconds have passed
-                const timeElapsed = 30 - gameState.timer;
-                const minimumGuessingTime = 15;
-                
-                if (timeElapsed >= minimumGuessingTime) {
-                    if (gameState.timerInterval) {
-                        clearInterval(gameState.timerInterval);
-                        gameState.timerInterval = null;
-                    }
-                    
-                    setTimeout(() => {
-                        calculateConfessionResults(code);
-                    }, 1000);
-                }
-            }
+            // No early timer skipping - let timer run full duration
         }
     });
     
     socket.on('request-sync', (data) => {
         const { code } = data;
         syncGameStateToPlayer(socket.id, code);
-    });
-    
-    socket.on('restart-game', (data) => {
-        const { code } = data;
-        const lobby = lobbies.get(code);
-        const gameState = gameStates.get(code);
-        
-        if (lobby && gameState && socket.username === lobby.host) {
-            gameState.phase = 'initial-voting';
-            gameState.roundNumber = 1;
-            gameState.currentTopic = null;
-            gameState.initialVotes = {};
-            gameState.selectedPlayer = null;
-            gameState.playerInitialVote = null;
-            gameState.confession = null;
-            gameState.guesses = {};
-            gameState.usedTopics = [];
-            gameState.timer = 30;
-            
-            lobby.participants.forEach(participant => {
-                gameState.scores[participant.username] = 0;
-            });
-            
-            if (gameState.timerInterval) {
-                clearInterval(gameState.timerInterval);
-            }
-            
-            io.to(code).emit('game-started', { lobby, gameState });
-            
-            setTimeout(() => {
-                startInitialVotingPhase(code);
-            }, 2000);
-        }
     });
     
     socket.on('disconnect', () => {
@@ -534,29 +446,52 @@ function selectRandomPlayer(code) {
     if (!gameState || !lobby) return;
     
     // Get all connected players who voted
-    const eligiblePlayers = lobby.participants.filter(participant => 
+    const connectedPlayersWhoVoted = lobby.participants.filter(participant => 
         participant.connected && gameState.initialVotes.hasOwnProperty(participant.username)
     );
     
-    if (eligiblePlayers.length === 0) {
+    if (connectedPlayersWhoVoted.length === 0) {
         endGame(code);
         return;
     }
     
-    // Select random player
-    const randomIndex = Math.floor(Math.random() * eligiblePlayers.length);
-    const selectedPlayer = eligiblePlayers[randomIndex];
+    // Update available speakers list with currently connected players
+    gameState.availableSpeakers = gameState.availableSpeakers.filter(username => 
+        connectedPlayersWhoVoted.some(p => p.username === username)
+    );
     
-    gameState.selectedPlayer = selectedPlayer.username;
-    gameState.playerInitialVote = gameState.initialVotes[selectedPlayer.username];
+    // Add any new connected players to available speakers
+    connectedPlayersWhoVoted.forEach(player => {
+        if (!gameState.availableSpeakers.includes(player.username) && 
+            !gameState.speakerRotation.includes(player.username)) {
+            gameState.availableSpeakers.push(player.username);
+        }
+    });
+    
+    // If no available speakers, reset rotation
+    if (gameState.availableSpeakers.length === 0) {
+        gameState.speakerRotation = [];
+        gameState.availableSpeakers = connectedPlayersWhoVoted.map(p => p.username);
+    }
+    
+    // Select random player from available speakers
+    const randomIndex = Math.floor(Math.random() * gameState.availableSpeakers.length);
+    const selectedPlayerUsername = gameState.availableSpeakers[randomIndex];
+    
+    // Move player from available to spoken
+    gameState.availableSpeakers = gameState.availableSpeakers.filter(username => username !== selectedPlayerUsername);
+    gameState.speakerRotation.push(selectedPlayerUsername);
+    
+    gameState.selectedPlayer = selectedPlayerUsername;
+    gameState.playerInitialVote = gameState.initialVotes[selectedPlayerUsername];
     gameState.phase = 'player-selection';
     
     io.to(code).emit('game-phase-update', { 
         phase: 'player-selection',
-        selectedPlayer: selectedPlayer.username
+        selectedPlayer: selectedPlayerUsername
     });
     io.to(code).emit('player-selected', {
-        selectedPlayer: selectedPlayer.username,
+        selectedPlayer: selectedPlayerUsername,
         playerVote: gameState.playerInitialVote
     });
     
@@ -627,16 +562,25 @@ function calculateConfessionResults(code) {
         }
     });
     
-    // Award points to correct guessers
+    // Award points to speaker based on how many believed them
     const actualConfession = gameState.confession || 'true';
+    let believersCount = 0;
+    
     lobby.participants.forEach(participant => {
         if (participant.connected && participant.username !== gameState.selectedPlayer) {
             const guess = gameState.guesses[participant.username];
+            // If speaker confessed truth and player guessed honest, OR
+            // if speaker confessed lying and player guessed lying, then player believed the speaker
             if (guess === actualConfession) {
-                gameState.scores[participant.username] += 3;
+                believersCount++;
             }
         }
     });
+    
+    // Speaker gets +3 points for each player that believed them
+    if (believersCount > 0) {
+        gameState.scores[gameState.selectedPlayer] += (believersCount * 3);
+    }
     
     gameState.phase = 'confession-results';
     
