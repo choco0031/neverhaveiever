@@ -562,17 +562,21 @@ function calculateConfessionResults(code) {
         }
     });
     
-    // Award points to speaker based on how many believed them
     const actualConfession = gameState.confession || 'true';
     let believersCount = 0;
     
     lobby.participants.forEach(participant => {
         if (participant.connected && participant.username !== gameState.selectedPlayer) {
             const guess = gameState.guesses[participant.username];
-            // If speaker confessed truth and player guessed honest, OR
-            // if speaker confessed lying and player guessed lying, then player believed the speaker
+            
+            // Count believers (those who voted same as speaker's confession)
             if (guess === actualConfession) {
                 believersCount++;
+            }
+            
+            // Award +3 points to players who correctly guessed the speaker's honesty
+            if (guess === actualConfession) {
+                gameState.scores[participant.username] += 3;
             }
         }
     });
